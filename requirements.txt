@@ -39,8 +39,8 @@ munkres==1.1.4
 nest-asyncio==1.6.0
 networkx
 numpy
-opencv-python==4.12.0
-opencv-python-headless==4.12.0
+opencv-python
+opencv-python-headless
 opentelemetry-api
 optree
 packaging==25.0
