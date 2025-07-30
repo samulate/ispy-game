@@ -11,6 +11,7 @@ import string
 from staticvectors import StaticVectors
 
 
+
 punc_regex = re.compile('[{}]'.format(re.escape(string.punctuation)))
 glovemodel = StaticVectors("neuml/glove-6B-quantized")
 
@@ -72,8 +73,7 @@ def image_to_data(image):
     name_out = names[index]
 
     return original_image, xyxy_out, name_out, mask, index
-# image_to_data("https://ultralytics.com/images/bus.jpg")
-# photo = Opencv.take_photo()
+
 
 def crop_image_and_pick(orig_image, xyxy):
     
