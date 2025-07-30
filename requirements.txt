@@ -61,7 +61,6 @@ pyparsing
 PySocks
 python-dateutil==2.9.0.post0
 pytz
-pywin32==311
 PyYAML
 pyzmq==27.0.0
 requests
@@ -87,7 +86,6 @@ ultralytics
 urllib3
 wcwidth==0.2.13
 webcolors
-win_inet_pton
 wrapt
 zipp
 zstandard==0.23.0
