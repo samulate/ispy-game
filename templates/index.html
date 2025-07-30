@@ -10,16 +10,20 @@
       <p><input type="submit" value="Submit"></p>
     </form>
     <hr>
-    {% for file in files %}
-      <img src="{{ url_for('uploads', filename=file) }}" style="width: 320px">
-    {% endfor %}
+    {% if similar != True %}
+    <img src="{{ url_for('uploads', filename=files[display_index]) }}" style="width: 320px">
+    {% else %}
+    <img src="{{ url_for('uploads', filename=files[display_index]) }}" style="width: 320px">
+    <img src="{{ url_for('uploads', filename=files[2]) }}" style="width: 320px">
+    {% endif %}
+
     {% if color != None %}
     {% if similar == None %}
-    <p>I spy with my little AI, something... <span>{{ color }}</span> colored.<p>
+    <p>I spy with my little AI, something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});">{{ color }}</span> colored.<p>
     {% elif similar %}
         <p>That's right, I was spying a {{ name }}!</p>
     {% else %}
-        <p>Not quite! I still spy something... {{ color }} colored.</p!>
+        <p>Not quite! I still spy something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});">{{ color }}</span> colored.</p!>
     {% endif %}
         
     <form method="POST" action="/guess" enctype="multipart/form-data">
@@ -27,6 +31,11 @@
         <input type="text" id ="guess" name="guess">
         <input type="submit" value="Submit">
     </form>
+    
+    <form method="POST" action="/boxes" enctype="multipart/form-data">
+        <input type="submit" value="Show Boxes">
+    </form>
+    
     {% endif %}
 </body>
 </html>

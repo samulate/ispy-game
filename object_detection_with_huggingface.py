@@ -8,6 +8,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import re
 import string
+import os.path
 from staticvectors import StaticVectors
 
 
@@ -41,17 +42,18 @@ def compute_similarity(user_input_vector,program_input_vector,threashold):
     return similarity > threashold
     
 def pre_process_query(query: str):
-        lower = query.lower()
-        no_punc = punc_regex.sub('', lower)
-        tokens = no_punc.split()
-        return tokens
+    lower = query.lower()
+    no_punc = punc_regex.sub('', lower)
+    tokens = no_punc.split()
+    return tokens
 
 def image_to_data(image):
-    results = model(image)
+    results = model(image, save=True, project="uploads")
     # box_heights = []
     # xyxy_list = []
     # print(results)
-    
+    output_results = []
+
     for result in results:
         xywh = result.boxes.xywh  # center-x, center-y, width, height
         xywhn = result.boxes.xywhn  # normalized
@@ -65,14 +67,14 @@ def image_to_data(image):
         original_image = result.orig_img
         confs = result.boxes.conf  # confidence score of each box
         mask = result.masks
-        
-    # result.show()
+        output_results.append(result)
+
     index = random.randint(0, len(xyxy)-1)
     
     xyxy_out = xyxy[index]
     name_out = names[index]
-
-    return original_image, xyxy_out, name_out, mask, index
+    
+    return original_image, xyxy_out, name_out, mask, index, result
 
 
 def crop_image_and_pick(orig_image, xyxy):
@@ -86,13 +88,20 @@ def crop_image_and_pick(orig_image, xyxy):
 
 def filepath_or_image_to_all_data(image_or_filepath):
 
-    orig_img, xyxy, name, mask, index = image_to_data(image_or_filepath)
+    orig_img, xyxy, name, mask, index, result = image_to_data(image_or_filepath)
 
     color_name, color_rgb_value = get_color(orig_img, xyxy, mask, index)
 
     cropped_image = crop_image_and_pick(orig_img,xyxy)
 
-    return color_name, color_rgb_value, orig_img, cropped_image, name
+    arr = np.array(cropped_image)
+    arr = arr.astype(np.uint8)
+
+    save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', 'img3.jpg')
+    arr_bgr = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+    cv2.imwrite(save_path, arr_bgr)
+
+    return color_name, color_rgb_value, orig_img, cropped_image, name, result
 
 
 def get_color(orig_img, xyxy, mask, index):
