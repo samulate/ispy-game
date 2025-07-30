@@ -1,17 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Flask Interactivity Example</title>
-</head>
-<body>
-    <h1>Type something!</h1>
-    <form method="post">
-        <input type="text" name="user_input" placeholder="Say hi">
-        <button type="submit">Submit</button>
+<!doctype html>
+<html>
+  <head>
+    <title>File Upload</title>
+  </head>
+  <body>
+    <h1>File Upload</h1>
+    <form method="POST" action="" enctype="multipart/form-data">
+      <p><input type="file" name="file"></p>
+      <p><input type="submit" value="Submit"></p>
     </form>
-    {% if result %}
-        <p><strong>Result:</strong> {{ result }}</p>
-    {% endif %}
-</body>
+    <hr>
+    {% for file in files %}
+      <img src="{{ url_for('upload', filename=file) }}" style="width: 64px">
+    {% endfor %}
+  </body>
 </html>
