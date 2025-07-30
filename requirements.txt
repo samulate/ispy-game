@@ -86,6 +86,7 @@ ultralytics
 urllib3
 wcwidth==0.2.13
 webcolors
+gunicorn
 wrapt
 zipp
 zstandard==0.23.0
