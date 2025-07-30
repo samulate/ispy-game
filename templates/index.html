@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flask Interactivity Example</title>
+</head>
+<body>
+    <h1>Type something!</h1>
+    <form method="post">
+        <input type="text" name="user_input" placeholder="Say hi">
+        <button type="submit">Submit</button>
+    </form>
+    {% if result %}
+        <p><strong>Result:</strong> {{ result }}</p>
+    {% endif %}
+</body>
+</html>
