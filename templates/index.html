@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>File Upload</title>
+    <title>I Spy With My Little AI</title>
   </head>
   <body>
     <h1>File Upload</h1>
@@ -11,7 +11,22 @@
     </form>
     <hr>
     {% for file in files %}
-      <img src="{{ url_for('uploads', filename=file) }}" style="width: 64px">
+      <img src="{{ url_for('uploads', filename=file) }}" style="width: 320px">
     {% endfor %}
-  </body>
+    {% if color != None %}
+    {% if similar == None %}
+    <p>I spy with my little AI, something... <span>{{ color }}</span> colored.<p>
+    {% elif similar %}
+        <p>That's right, I was spying a {{ name }}!</p>
+    {% else %}
+        <p>Not quite! I still spy something... {{ color }} colored.</p!>
+    {% endif %}
+        
+    <form method="POST" action="/guess" enctype="multipart/form-data">
+        <label for="guess">What object do I spy? </label>
+        <input type="text" id ="guess" name="guess">
+        <input type="submit" value="Submit">
+    </form>
+    {% endif %}
+</body>
 </html>
