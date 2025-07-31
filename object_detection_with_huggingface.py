@@ -1,7 +1,7 @@
 import random
 from ultralytics import YOLO
 import cv2
-model = YOLO("yolo11n-seg.pt")  # load an official model  yolo11n.pt
+model = YOLO("yolo11x-seg.pt")  # load an official model  yolo11n.pt
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import numpy as np
@@ -9,22 +9,15 @@ from sklearn.cluster import KMeans
 import re
 import string
 import os.path
-from staticvectors import StaticVectors
+# from staticvectors import StaticVectors
+from sentence_transformers import SentenceTransformer
 
+# punc_regex = re.compile('[{}]'.format(re.escape(string.punctuation)))
+# glovemodel = StaticVectors("neuml/glove-6B-quantized")
 
-
-punc_regex = re.compile('[{}]'.format(re.escape(string.punctuation)))
-glovemodel = StaticVectors("neuml/glove-6B-quantized")
-
-
-
+sbert = SentenceTransformer('all-MiniLM-L6-v2')
 def text_to_embedding(text):
-    tokens = pre_process_query(text)
-    embedding = None
-    for token in tokens:
-        embedding = glovemodel.embeddings([token])
-        break
-    return embedding
+    return sbert.encode([text])  # returns np.array shape (1, 384)
     
 
 def compute_similarity(user_input_vector,program_input_vector,threashold):
@@ -41,14 +34,14 @@ def compute_similarity(user_input_vector,program_input_vector,threashold):
     print(f"similarity: {similarity}")
     return similarity > threashold
     
-def pre_process_query(query: str):
-    lower = query.lower()
-    no_punc = punc_regex.sub('', lower)
-    tokens = no_punc.split()
-    return tokens
+# def pre_process_query(query: str):
+#     lower = query.lower()
+#     no_punc = punc_regex.sub('', lower)
+#     tokens = no_punc.split()
+#     return tokens
 
 def image_to_data(image):
-    results = model(image, save=True, project="uploads")
+    results = model(image, save=True, project="uploads", conf=0.25)
     # box_heights = []
     # xyxy_list = []
     # print(results)
