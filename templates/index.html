@@ -2,40 +2,44 @@
 <html>
   <head>
     <title>I Spy With My Little AI</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
-    <h1>File Upload</h1>
-    <form method="POST" action="/" enctype="multipart/form-data">
-      <p><input type="file" name="file"></p>
-      <p><input type="submit" value="Submit"></p>
-    </form>
-    <hr>
-    {% if similar != True %}
-    <img src="{{ url_for('uploads', filename=files[display_index]) }}" style="width: 320px">
-    {% else %}
-    <img src="{{ url_for('uploads', filename=files[display_index]) }}" style="width: 320px">
-    <img src="{{ url_for('uploads', filename=files[2]) }}" style="width: 320px">
-    {% endif %}
+    <div id="toolbar">
+      <form method="POST" action="/" enctype="multipart/form-data">
+        <label for="file-upload" class="button">Browse Files...</label>
+        <input type="file" name="file-upload" id="file-upload">
+        <input type="submit" value="Submit" class="button">
+      </form>
 
-    {% if color != None %}
+      {% if color != None %}
+      
+      <form method="POST" action="/boxes" enctype="multipart/form-data" style="margin-left: auto;">
+          <input type="submit" value="Show Boxes" class="button">
+      </form>
+    </div>
+  
+    <hr>
+    <br>
+
+    <img src="{{ url_for('uploads', filename=files[display_index]) }}" style="width: 320px">
     {% if similar == None %}
-    <p>I spy with my little AI, something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});">{{ color }}</span> colored.<p>
+    <h2>I spy with my little AI, something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});"><em>{{ color }}</em></span> colored.<h2>
     {% elif similar %}
-        <p>That's right, I was spying a {{ name }}!</p>
+    <img src="{{ url_for('uploads', filename=files[2]) }}" style="width: 320px">
+    <h2>That's right, I was looking for {{ name }}!</h2>
     {% else %}
-        <p>Not quite! I still spy something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});">{{ color }}</span> colored.</p!>
+    <h2>Not quite! I still spy something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});"><em>{{ color }}</em></span> colored.</h2!>
     {% endif %}
-        
+    
+    {% if similar != True %}
     <form method="POST" action="/guess" enctype="multipart/form-data">
         <label for="guess">What object do I spy? </label>
-        <input type="text" id ="guess" name="guess">
-        <input type="submit" value="Submit">
+        <input type="text" id ="guess" name="guess" class="input-text">
+        <input type="submit" value="Submit" class="button">
     </form>
-    
-    <form method="POST" action="/boxes" enctype="multipart/form-data">
-        <input type="submit" value="Show Boxes">
-    </form>
-    
+    {% endif %}
+
     {% endif %}
 </body>
 </html>

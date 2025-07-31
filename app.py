@@ -7,8 +7,6 @@ from object_detection_with_huggingface import filepath_or_image_to_all_data
 from object_detection_with_huggingface import text_to_embedding
 from object_detection_with_huggingface import compute_similarity
 
-
-
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.gif']
@@ -48,7 +46,7 @@ def upload_files():
     name = None
     similar = None
     display_index = 0
-    uploaded_file = request.files['file']
+    uploaded_file = request.files['file-upload']
     filename = secure_filename(uploaded_file.filename)
     print(filename)
     if filename != '':
