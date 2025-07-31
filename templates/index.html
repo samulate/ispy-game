@@ -13,9 +13,12 @@
       </form>
 
       {% if color != None %}
-      
       <form method="POST" action="/boxes" enctype="multipart/form-data" style="margin-left: auto;">
           <input type="submit" value="Show Boxes" class="button">
+      </form>
+      {% endif %}
+      <form method="POST" action="/reset-session" enctype="multipart/form-data" style="margin-left: auto;">
+          <input type="submit" value="Clear Session" class="button">
       </form>
     </div>
   
@@ -43,7 +46,7 @@
         <input type="submit" value="Submit" class="button">
     </form>
     {% endif %}
-
+    
     {% endif %}
 </body>
 </html>
