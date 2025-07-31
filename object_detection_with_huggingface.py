@@ -18,7 +18,6 @@ from sentence_transformers import SentenceTransformer
 sbert = SentenceTransformer('all-MiniLM-L6-v2')
 def text_to_embedding(text):
     return sbert.encode([text])  # returns np.array shape (1, 384)
-    
 
 def compute_similarity(user_input_vector,program_input_vector,threashold):
     
@@ -90,11 +89,11 @@ def filepath_or_image_to_all_data(image_or_filepath):
     arr = np.array(cropped_image)
     arr = arr.astype(np.uint8)
 
-    save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', 'img3.jpg')
+    
     arr_bgr = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
-    cv2.imwrite(save_path, arr_bgr)
+    # cv2.imwrite(save_path, arr_bgr)
 
-    return color_name, color_rgb_value, orig_img, cropped_image, name, result
+    return color_name, color_rgb_value, orig_img, cropped_image, name, result, arr_bgr
 
 
 def get_color(orig_img, xyxy, mask, index):

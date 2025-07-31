@@ -28,6 +28,10 @@
     {% elif similar %}
     <img src="{{ url_for('uploads', filename=files[2]) }}" style="width: 320px">
     <h2>That's right, I was looking for {{ name }}!</h2>
+    <form method="POST" action="/again" enctype="multipart/form-data">
+        <input type="submit" value="Spy again on the same image?" class="button">
+    </form>
+
     {% else %}
     <h2>Not quite! I still spy something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});"><em>{{ color }}</em></span> colored.</h2!>
     {% endif %}
