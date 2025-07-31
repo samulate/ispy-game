@@ -7,15 +7,60 @@
 }
 
 #toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 0.75rem;
+}
+
+#toolbar > :nth-child(1) {
+  justify-self: start;
+}
+
+#toolbar > :nth-child(2) {
+  justify-self: center;
+}
+
+#toolbar > :nth-child(3) {
+  justify-self: end;
+}
+
+.nav-side {
   display: flex;
-  flex-direction: row;
-  padding: 10px;
+  gap: 1rem;
+}
+
+.content {
+  text-align: center;
+}
+
+footer {
+  text-align: center;
+  opacity: 0.5;
+  bottom: 0.5%;
+  width: 100%;
+  position: fixed;
+}
+
+img {
+  height: 50vh;
+  max-width: 45vw;
+  display: inline-block;
+  object-fit: contain;
+}
+
+#point-info {
+  text-align: center;
+  opacity: 0.5;
+  padding: 0;
+  font-size: 1rem;
+  margin: 0;
 }
 
 .button {
   align-items: center;
   appearance: none;
-  background-color: #FCFCFD;
+  background-color: #FCFCFD; /*#b5b5b5*/
   border-radius: 4px;
   border-width: 0;
   box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset;
@@ -78,3 +123,8 @@
 .input-text:hover {
   outline: 1px solid lightgrey;
 }
+
+
+  html {
+        background-color: #ededed; /* Example: light gray using color name */
+    }

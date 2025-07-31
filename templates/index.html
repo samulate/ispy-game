@@ -3,33 +3,54 @@
   <head>
     <title>I Spy With My Little AI</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
   </head>
   <body>
     <div id="toolbar">
-      <form method="POST" action="/" enctype="multipart/form-data">
+      <form class="nav-side" method="POST" action="/" enctype="multipart/form-data">
         <label for="file-upload" class="button">Browse Files...</label>
         <input type="file" name="file-upload" id="file-upload">
         <input type="submit" value="Submit" class="button">
       </form>
 
-      {% if color != None %}
-      <form method="POST" action="/boxes" enctype="multipart/form-data" style="margin-left: auto;">
-          <input type="submit" value="Show Boxes" class="button">
-      </form>
+      {% if points != None and (error == False or points != 0)%}
+      <div style="display: flex; flex-direction: column; align-items: center; margin: 0 auto;">
+        <h1 style="margin: 0; font-size: 3rem;">{{ points }}</h1>
+        <p id="point-info">+20 per correct guess, +10 with hint, -1 on incorrect guess</p>
+      </div>
+      {% else %}
+      <div style="display: flex; flex-direction: column; align-items: center; opacity:0;">
+        <h1 style="margin: 0; font-size: 3rem;">{{ points }}</h1>
+        <p id="point-info">+20 per correct guess, +10 with hint, -1 on incorrect guess</p>
+      </div>
       {% endif %}
-      <form method="POST" action="/reset-session" enctype="multipart/form-data" style="margin-left: auto;">
-          <input type="submit" value="Clear Session" class="button">
-      </form>
+      
+      <div class="nav-side">
+      {% if color != None %}
+        <form method="POST" action="/boxes" enctype="multipart/form-data" style="margin-left: auto;">
+            <input type="submit" value="Show Boxes" class="button">
+        </form>
+      {% endif %}
+        <form method="POST" action="/reset-session" enctype="multipart/form-data" style="margin-left: auto;">
+            <input type="submit" value="Clear Session" class="button">
+        </form>
+      </div>
     </div>
-  
+
+    {% if points != None %}
     <hr>
     <br>
+    {% endif %}
 
-    <img src="{{ url_for('uploads', filename=files[display_index]) }}" style="width: 320px">
+    {% if color != None %}
+
+    <div class="content">
+
+    <img src="{{ url_for('uploads', filename=files[display_index]) }}" >
     {% if similar == None %}
     <h2>I spy with my little AI, something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});"><em>{{ color }}</em></span> colored.<h2>
     {% elif similar %}
-    <img src="{{ url_for('uploads', filename=files[2]) }}" style="width: 320px">
+    <img src="{{ url_for('uploads', filename=files[2]) }}" >
     <h2>That's right, I was looking for {{ name }}!</h2>
     <form method="POST" action="/again" enctype="multipart/form-data">
         <input type="submit" value="Spy again on the same image?" class="button">
@@ -45,8 +66,21 @@
         <input type="text" id ="guess" name="guess" class="input-text">
         <input type="submit" value="Submit" class="button">
     </form>
+
+   
+
+    </div>
     {% endif %}
     
+    {% endif %}
+
+    {% if error %}
+    <h1 style="text-align: center;">We couldn't detect any objects in your image. <br> Please upload a new image.</h1>
+    <script>alert("Image processing error: No objects detected.");</script>
+    {% endif %}
+
+    {% if points != None %}
+    <footer>I Spy AI can make mistakes. Check important info</footer>
     {% endif %}
 </body>
 </html>

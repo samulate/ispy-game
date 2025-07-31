@@ -38,19 +38,21 @@ def validate_image(stream):
 def index():
     print("redirected")
     files = session.get('files', [])
-
-  
+    
+    
     color_name = session.get('color_name', None)
     name = session.get('name', None)
     similar = session.get('similar', None)
     display_index = session.get('display_index', 0)
     rgb_value = session.get('rgb_value', (0,0,0))
+    points = session.get('points',None)
+    error = session.get('error', False)
     
     # orig_img = session.get('orig_img', [])
     # cropped_image = session.get('cropped_image', [])
     
     #rgb_string = f"rgb({rgb_value[0]}, {rgb_value[1]}, {rgb_value[2]})"
-    return render_template('index.html', files=files, color=color_name, similar=similar, name=name,display_index=display_index,rgb_value=rgb_value)
+    return render_template('index.html', files=files, color=color_name, similar=similar, name=name,display_index=display_index,rgb_value=rgb_value,points=points,error=error)
 
 
 
@@ -60,13 +62,23 @@ def index():
 def upload_files():
     # global color_name, rgb_value, orig_img, cropped_image, name, files, similar, display_index
 
+
+    
     try:
         kill_current_session_images()
     except:
         pass
 
     # files = []
-    
+    hint_used = session.get('hint_used',False)
+    points = session.get('points',0)
+    if type(points) != int:
+        points = 0
+    session['points'] = points
+
+    error = session.get('error', False)
+    error = False
+    session['error'] = error
 
     uploaded_file = request.files['file-upload']
 
@@ -89,7 +101,8 @@ def upload_files():
         
         session['file_ext'] = os.path.splitext(filename)[1]
 
-        file_ext = session.get('file_ext', None)
+        if file_ext == ".jpeg":
+            file_ext = ".jpg"
 
         if file_ext not in app.config['UPLOAD_EXTENSIONS'] or file_ext != validate_image(uploaded_file.stream):
             abort(400)
@@ -98,48 +111,60 @@ def upload_files():
         unique_name = session.get('unique_name', None)
         
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], unique_name+file_ext))
-        
-        color_name, rgb_value, orig_img, cropped_image, name, result, arr_bgr = filepath_or_image_to_all_data(os.path.join(app.config['UPLOAD_PATH'], unique_name+file_ext))
-        
-        
 
         files.append(unique_name+file_ext)
-        files.append(unique_name+"_2.jpg")
-        files.append(unique_name+"_3.jpg")
-
         session['files'] = files
         
-        # print(files)
-        img2 = os.path.join('uploads', 'predict',  f'{unique_name}.jpg')
-        shutil.move(img2, os.path.join(app.config['UPLOAD_PATH'], f'{unique_name}_2.jpg'))
-        
-        os.removedirs(os.path.join('uploads', 'predict'))
-        save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', f'{unique_name}_3.jpg')
-        cv2.imwrite(save_path, arr_bgr)
+        try:
+            color_name, rgb_value, orig_img, cropped_image, name, result, arr_bgr = filepath_or_image_to_all_data(os.path.join(app.config['UPLOAD_PATH'], unique_name+file_ext))
+            
+            files.append(unique_name+"_2.jpg")
+            files.append(unique_name+"_3.jpg")
 
-        print(session['files'])
+            session['files'] = files
+            
+            # print(files)
+            img2 = os.path.join('uploads', 'predict',  f'{unique_name}.jpg')
+            shutil.move(img2, os.path.join(app.config['UPLOAD_PATH'], f'{unique_name}_2.jpg'))
+            
+            os.removedirs(os.path.join('uploads', 'predict'))
+            save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', f'{unique_name}_3.jpg')
+            cv2.imwrite(save_path, arr_bgr)
+
+            print(session['files'])
 
 
-        session['color_name'] = color_name
-        session['name'] = name
-        session['similar'] = similar
-        session['display_index'] = display_index
-        session['rgb_value'] = rgb_value.tolist()
-        # session['orig_img'] = orig_img
-        # session['cropped_image'] = cropped_image
-        
+            session['color_name'] = color_name
+            session['name'] = name
+            session['similar'] = similar
+            session['display_index'] = display_index
+            session['rgb_value'] = rgb_value.tolist()
+            
+        except:
+            shutil.rmtree(os.path.join('uploads', 'predict'))
+
+            kill_current_session_images()
+            session['error'] = True
+            session['color_name'] = None
+            session['name'] = None
+            session['similar'] = None
+            session['display_index'] = 0
+            session['rgb_value'] = (0,0,0)
+            session['hint_used'] = False
+
+
 
     return redirect(url_for('index'))
 
 @app.route('/again', methods=['POST'])
 def go_again():
    
-
     session['color_name'] = None
     session['name'] = None
     session['similar'] = None
     session['display_index'] = 0
     session['rgb_value'] = (0,0,0)
+    session['hint_used'] = False
     
     files = session.get('files', [])
     color_name = session.get('color_name', None)
@@ -208,15 +233,40 @@ def guess():
     session['similar'] = bool(compute_similarity(user_vector,program_vector, 0.5))
     # except:
     #     print(f"could not set session['similar'] to compute_similarity(user_vector,program_vector, 0.5), which returned {compute_similarity(user_vector,program_vector, 0.5)}")
-
-    
+    if session['similar']:
+        if session['hint_used']:
+            session['points'] += 10
+        else:
+            session['points'] += 20
+    elif session['points'] > 0:
+        session['points'] -= 1
     return redirect(url_for('index'))
     
+@app.route('/reset-session', methods=['POST'])
+def reset_current_user():
+    # global display_index
+    try:
+        kill_current_session_images()
+    except:
+        pass
+    session['points'] = None
+    session['color_name'] = None
+    session['name'] = None
+    session['similar'] = None
+    session['display_index'] = 0
+    session['rgb_value'] = (0,0,0)
+    session['hint_used'] = False
+    session['files'] = []
+    session['error'] = False
+
+    
+
+    return redirect(url_for('index'))
 
 @app.route('/boxes', methods=['POST'])
 def boxes():
     # global display_index
-    
+    session['hint_used'] = True
     session['display_index'] = 1 - session.get('display_index',0)
 
     return redirect(url_for('index'))
@@ -234,6 +284,7 @@ def kill_current_session_images():
     session['similar'] = None
     session['display_index'] = 0
     session['rgb_value'] = (0,0,0)
+    session['error'] = False
     # session['orig_img'] = orig_img
 
 
