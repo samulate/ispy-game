@@ -8,6 +8,10 @@ import cv2
 from object_detection_with_huggingface import filepath_or_image_to_all_data
 from object_detection_with_huggingface import text_to_embedding
 from object_detection_with_huggingface import compute_similarity
+from PIL import Image
+from pillow_heif import register_heif_opener
+register_heif_opener()
+import io
 
 app = Flask(__name__)
 # app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
@@ -61,9 +65,6 @@ def index():
 @app.route('/', methods=['POST'])
 def upload_files():
     # global color_name, rgb_value, orig_img, cropped_image, name, files, similar, display_index
-
-
-    
     try:
         kill_current_session_images()
     except:
@@ -81,6 +82,8 @@ def upload_files():
     session['error'] = error
 
     uploaded_file = request.files['file-upload']
+
+
 
     files = session.get('files', [])
     color_name = session.get('color_name', None)
@@ -101,22 +104,59 @@ def upload_files():
         
         session['file_ext'] = os.path.splitext(filename)[1]
 
+        file_ext = session.get('file_ext', None)
+
         if file_ext == ".jpeg":
             file_ext = ".jpg"
 
-        if file_ext not in app.config['UPLOAD_EXTENSIONS'] or file_ext != validate_image(uploaded_file.stream):
-            abort(400)
-
-        session['unique_name'] = f"{uuid.uuid4().hex}" 
-        unique_name = session.get('unique_name', None)
         
-        uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], unique_name+file_ext))
 
-        files.append(unique_name+file_ext)
-        session['files'] = files
+        if file_ext == ".heic":
+            file_bytes = uploaded_file.read()
+            file_stream = io.BytesIO(file_bytes)
+
+            img = Image.open(file_stream)
+            img = img.convert("RGB")
+
+            jpeg_stream = io.BytesIO()
+            img.save(jpeg_stream,"JPEG",quality=95)
+            jpeg_stream.seek(0)
+
+           
+
+            session['unique_name'] = f"{uuid.uuid4().hex}" 
+
+            unique_name = session['unique_name']
+
+            save_path = os.path.join(app.config['UPLOAD_PATH'], unique_name+".jpg")
+
+            with open(save_path, 'wb') as f:
+                f.write(jpeg_stream.read())
+
+            files.append(unique_name+'.jpg')
+
+            session['files'] = files
+            file_ext = ".jpg"
+
+        
+
+        
+        else:
+
+            if file_ext not in app.config['UPLOAD_EXTENSIONS'] or file_ext != validate_image(uploaded_file.stream):
+                abort(400)
+
+            session['unique_name'] = f"{uuid.uuid4().hex}" 
+            unique_name = session.get('unique_name', None)
+            
+            save_path = os.path.join(app.config['UPLOAD_PATH'], unique_name+file_ext)
+            uploaded_file.save(save_path)
+
+            files.append(unique_name+file_ext)
+            session['files'] = files
         
         try:
-            color_name, rgb_value, orig_img, cropped_image, name, result, arr_bgr = filepath_or_image_to_all_data(os.path.join(app.config['UPLOAD_PATH'], unique_name+file_ext))
+            color_name, rgb_value, orig_img, cropped_image, name, result, arr_bgr = filepath_or_image_to_all_data(save_path)
             
             files.append(unique_name+"_2.jpg")
             files.append(unique_name+"_3.jpg")

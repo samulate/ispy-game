@@ -37,15 +37,16 @@
       </div>
     </div>
 
-    {% if points != None %}
-    <hr>
-    <br>
-    {% endif %}
 
     {% if color != None %}
 
-    <div class="content">
 
+
+    <div class="content">
+    {% if points != None %}
+      <hr>
+      <br>
+    {% endif %}
     <img src="{{ url_for('uploads', filename=files[display_index]) }}" >
     {% if similar == None %}
     <h2>I spy with my little AI, something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});"><em>{{ color }}</em></span> colored.<h2>
@@ -80,7 +81,17 @@
     {% endif %}
 
     {% if points != None %}
-    <footer>I Spy AI can make mistakes. Check important info</footer>
+    <footer>I Spy AI can make mistakes. Check important info.</footer>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+      const content = document.querySelector('.content');
+      const footer = document.querySelector('footer');
+
+      if (content && footer && content.contains(footer)) {
+        document.body.appendChild(footer);
+      }
+      });
+    </script>
     {% endif %}
 </body>
 </html>

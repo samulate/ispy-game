@@ -92,3 +92,4 @@ zstandard==0.23.0
 flask
 werkzeug 
 sentence_transformers
+pillow-heif

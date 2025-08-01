@@ -32,14 +32,14 @@
 
 .content {
   text-align: center;
+  flex: 1;
 }
 
 footer {
   text-align: center;
   opacity: 0.5;
-  bottom: 0.5%;
   width: 100%;
-  position: fixed;
+  padding: 10px 0;
 }
 
 img {
@@ -124,7 +124,31 @@ img {
   outline: 1px solid lightgrey;
 }
 
+html {
+  background-color: #ededed;
+}
 
-  html {
-        background-color: #ededed; /* Example: light gray using color name */
-    }
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  #toolbar {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    text-align: center;
+    gap: 20px;
+  }
+  #toolbar > * {
+    grid-auto-flow: row;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px;
+  }
+}
