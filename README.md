@@ -1,4 +1,4 @@
-# I Spy
+# I Spy With My Little AI
 
 A photo guessing game using YOLO object detection and sentence embeddings.
 
