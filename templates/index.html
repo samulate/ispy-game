@@ -49,16 +49,17 @@
     {% endif %}
     <img src="{{ url_for('uploads', filename=files[display_index]) }}" >
     {% if similar == None %}
-    <h2>I spy with my little AI, something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});"><em>{{ color }}</em></span> colored.<h2>
+    <h2>I spy with my little AI, something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});"><em>{{ color }}</em></span> colored.</h2>
     {% elif similar %}
     <img src="{{ url_for('uploads', filename=files[2]) }}" >
     <h2>That's right, I was looking for {{ name }}!</h2>
+    <p>Found it in {{ guesses }} guess{% if guesses != 1 %}es{% endif %}, {% if hint_used %}with a hint{% else %}no hints{% endif %}.</p>
     <form method="POST" action="/again" enctype="multipart/form-data">
         <input type="submit" value="Spy again on the same image?" class="button">
     </form>
 
     {% else %}
-    <h2>Not quite! I still spy something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});"><em>{{ color }}</em></span> colored.</h2!>
+    <h2>Not quite! I still spy something... <span style="color: rgb({{ rgb_value[0] }}, {{ rgb_value[1] }}, {{ rgb_value[2] }});"><em>{{ color }}</em></span> colored.</h2>
     {% endif %}
     
     {% if similar != True %}
@@ -70,8 +71,8 @@
 
    
 
-    </div>
     {% endif %}
+    </div>
     
     {% endif %}
 
@@ -82,16 +83,14 @@
 
     {% if points != None %}
     <footer>I Spy AI can make mistakes. Check important info.</footer>
+    {% endif %}
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-      const content = document.querySelector('.content');
-      const footer = document.querySelector('footer');
+      const fileUpload = document.getElementById('file-upload');
+      const fileLabel = document.querySelector('label[for="file-upload"]');
 
-      if (content && footer && content.contains(footer)) {
-        document.body.appendChild(footer);
-      }
+      fileUpload.addEventListener('change', function () {
+        fileLabel.textContent = fileUpload.files.length ? fileUpload.files[0].name : 'Browse Files...';
       });
     </script>
-    {% endif %}
 </body>
 </html>

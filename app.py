@@ -51,12 +51,14 @@ def index():
     rgb_value = session.get('rgb_value', (0,0,0))
     points = session.get('points',None)
     error = session.get('error', False)
+    guesses = session.get('guesses', 0)
+    hint_used = session.get('hint_used', False)
     
     # orig_img = session.get('orig_img', [])
     # cropped_image = session.get('cropped_image', [])
     
     #rgb_string = f"rgb({rgb_value[0]}, {rgb_value[1]}, {rgb_value[2]})"
-    return render_template('index.html', files=files, color=color_name, similar=similar, name=name,display_index=display_index,rgb_value=rgb_value,points=points,error=error)
+    return render_template('index.html', files=files, color=color_name, similar=similar, name=name,display_index=display_index,rgb_value=rgb_value,points=points,error=error,guesses=guesses,hint_used=hint_used)
 
 
 
@@ -102,7 +104,7 @@ def upload_files():
     print(filename)
     if filename != '':
         
-        session['file_ext'] = os.path.splitext(filename)[1]
+        session['file_ext'] = os.path.splitext(filename)[1].lower()
 
         file_ext = session.get('file_ext', None)
 
@@ -154,7 +156,9 @@ def upload_files():
 
             files.append(unique_name+file_ext)
             session['files'] = files
-        
+
+        session['file_ext'] = file_ext
+
         try:
             color_name, rgb_value, orig_img, cropped_image, name, result, arr_bgr = filepath_or_image_to_all_data(save_path)
             
@@ -205,6 +209,7 @@ def go_again():
     session['display_index'] = 0
     session['rgb_value'] = (0,0,0)
     session['hint_used'] = False
+    session['guesses'] = 0
     
     files = session.get('files', [])
     color_name = session.get('color_name', None)
@@ -266,15 +271,19 @@ def guess():
     #         upload_files()
     #         return redirect(url_for('index'))
 
-    input_string = request.form.get("guess")
+    input_string = request.form.get("guess", "").strip()
+    if not input_string or not session.get('name') or session.get('similar'):
+        return redirect(url_for('index'))
+
     user_vector = text_to_embedding(input_string)
     program_vector = text_to_embedding(session.get('name', "default"))
     # try:
     session['similar'] = bool(compute_similarity(user_vector,program_vector, 0.5))
+    session['guesses'] = session.get('guesses', 0) + 1
     # except:
     #     print(f"could not set session['similar'] to compute_similarity(user_vector,program_vector, 0.5), which returned {compute_similarity(user_vector,program_vector, 0.5)}")
     if session['similar']:
-        if session['hint_used']:
+        if session.get('hint_used', False):
             session['points'] += 10
         else:
             session['points'] += 20
@@ -296,6 +305,7 @@ def reset_current_user():
     session['display_index'] = 0
     session['rgb_value'] = (0,0,0)
     session['hint_used'] = False
+    session['guesses'] = 0
     session['files'] = []
     session['error'] = False
 
@@ -306,13 +316,15 @@ def reset_current_user():
 @app.route('/boxes', methods=['POST'])
 def boxes():
     # global display_index
+    if not session.get('name') or session.get('similar'):
+        return redirect(url_for('index'))
     session['hint_used'] = True
     session['display_index'] = 1 - session.get('display_index',0)
 
     return redirect(url_for('index'))
 
 def kill_current_session_images():
-    print(f"killing files in {session['files']}")
+    print(f"killing files in {session.get('files', [])}")
     for file in session.get('files',[]):
         print(f"file: {file}")
         if os.path.exists(os.path.join(app.config['UPLOAD_PATH'],file)):
@@ -325,6 +337,8 @@ def kill_current_session_images():
     session['display_index'] = 0
     session['rgb_value'] = (0,0,0)
     session['error'] = False
+    session['hint_used'] = False
+    session['guesses'] = 0
     # session['orig_img'] = orig_img
 
 
