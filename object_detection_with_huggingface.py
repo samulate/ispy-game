@@ -1,7 +1,8 @@
 import random
+from pathlib import Path
 from ultralytics import YOLO
 import cv2
-model = YOLO("yolo11x-seg.pt")  # load an official model  yolo11n.pt
+model = YOLO(str(Path(__file__).with_name("yolo11x-seg.pt")))
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import numpy as np
@@ -40,7 +41,7 @@ def compute_similarity(user_input_vector,program_input_vector,threashold):
 #     return tokens
 
 def image_to_data(image):
-    results = model(image, save=True, project="uploads", conf=0.25)
+    results = model(image, save=False, conf=0.25)
     # box_heights = []
     # xyxy_list = []
     # print(results)
@@ -60,6 +61,9 @@ def image_to_data(image):
         confs = result.boxes.conf  # confidence score of each box
         mask = result.masks
         output_results.append(result)
+
+    if len(xyxy) == 0 or mask is None:
+        raise ValueError('No objects with segmentation masks were detected in the image')
 
     index = random.randint(0, len(xyxy)-1)
     

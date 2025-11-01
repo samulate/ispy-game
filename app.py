@@ -1,6 +1,5 @@
 import imghdr
 import os
-import shutil
 from flask import Flask, render_template, request, redirect, url_for, abort, send_from_directory, session
 import uuid
 from werkzeug.utils import secure_filename
@@ -16,7 +15,7 @@ import io
 app = Flask(__name__)
 # app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.gif']
-app.config['UPLOAD_PATH'] = 'uploads'
+app.config['UPLOAD_PATH'] = os.path.join(app.root_path, 'uploads')
 app.secret_key = 'Reynaldo'  # required for Flask sessions
 os.makedirs(app.config['UPLOAD_PATH'], exist_ok=True)
 
@@ -159,42 +158,7 @@ def upload_files():
 
         session['file_ext'] = file_ext
 
-        try:
-            color_name, rgb_value, orig_img, cropped_image, name, result, arr_bgr = filepath_or_image_to_all_data(save_path)
-            
-            files.append(unique_name+"_2.jpg")
-            files.append(unique_name+"_3.jpg")
-
-            session['files'] = files
-            
-            # print(files)
-            img2 = os.path.join('uploads', 'predict',  f'{unique_name}.jpg')
-            shutil.move(img2, os.path.join(app.config['UPLOAD_PATH'], f'{unique_name}_2.jpg'))
-            
-            os.removedirs(os.path.join('uploads', 'predict'))
-            save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', f'{unique_name}_3.jpg')
-            cv2.imwrite(save_path, arr_bgr)
-
-            print(session['files'])
-
-
-            session['color_name'] = color_name
-            session['name'] = name
-            session['similar'] = similar
-            session['display_index'] = display_index
-            session['rgb_value'] = rgb_value.tolist()
-            
-        except:
-            shutil.rmtree(os.path.join('uploads', 'predict'))
-
-            kill_current_session_images()
-            session['error'] = True
-            session['color_name'] = None
-            session['name'] = None
-            session['similar'] = None
-            session['display_index'] = 0
-            session['rgb_value'] = (0,0,0)
-            session['hint_used'] = False
+        prepare_round(save_path, unique_name)
 
 
 
@@ -202,59 +166,31 @@ def upload_files():
 
 @app.route('/again', methods=['POST'])
 def go_again():
-   
-    session['color_name'] = None
-    session['name'] = None
-    session['similar'] = None
-    session['display_index'] = 0
-    session['rgb_value'] = (0,0,0)
-    session['hint_used'] = False
-    session['guesses'] = 0
-    
-    files = session.get('files', [])
-    color_name = session.get('color_name', None)
-    name = session.get('name', None)
-    similar = session.get('similar', None)
-    display_index = session.get('display_index', 0)
-    rgb_value = session.get('rgb_value', (0,0,0))
     unique_name = session.get('unique_name', None)
     file_ext = session.get('file_ext', None)
+    if not unique_name or not file_ext:
+        return redirect(url_for('index'))
 
-    for index in range(1,len(session.get('files',[]))):
-        print(f"file: {files[index]}")
-
-
-        if os.path.exists(os.path.join(app.config['UPLOAD_PATH'],files[index])):
-            if "_2.jpg" in files[index] or "_3.jpg" in files[index]:
-                print("go again removing")
-                os.remove(os.path.join(app.config['UPLOAD_PATH'],files[index]))
-
-
-    color_name, rgb_value, orig_img, cropped_image, name, result, arr_bgr = filepath_or_image_to_all_data(os.path.join(app.config['UPLOAD_PATH'], unique_name+file_ext))
-
-    
-        
-    # print(files)
-    img2 = os.path.join('uploads', 'predict',  f'{unique_name}.jpg')
-    shutil.move(img2, os.path.join(app.config['UPLOAD_PATH'], f'{unique_name}_2.jpg'))
-    
-    os.removedirs(os.path.join('uploads', 'predict'))
-    save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', f'{unique_name}_3.jpg')
-    cv2.imwrite(save_path, arr_bgr)
-
-    # print(session['files'])
-
-
-    session['color_name'] = color_name
-    session['name'] = name
-    session['similar'] = similar
-    session['display_index'] = display_index
-    session['rgb_value'] = rgb_value.tolist()
-    # session['orig_img'] = orig_img
-    # session['cropped_image'] = cropped_image
-        
-
+    prepare_round(os.path.join(app.config['UPLOAD_PATH'], unique_name + file_ext), unique_name)
     return redirect(url_for('index'))
+
+
+def prepare_round(save_path, unique_name):
+    # Save to explicit paths instead of relying on YOLO's global output settings.
+    session['files'] = [os.path.basename(save_path), f'{unique_name}_2.jpg', f'{unique_name}_3.jpg']
+    try:
+        color_name, rgb_value, _, _, name, result, arr_bgr = filepath_or_image_to_all_data(save_path)
+        result.save(filename=os.path.join(app.config['UPLOAD_PATH'], f'{unique_name}_2.jpg'))
+        crop_path = os.path.join(app.config['UPLOAD_PATH'], f'{unique_name}_3.jpg')
+        if not cv2.imwrite(crop_path, arr_bgr):
+            raise OSError(f'Could not save cropped image: {crop_path}')
+
+        session.update(color_name=color_name, name=name, similar=None, display_index=0,
+                       rgb_value=rgb_value.tolist(), hint_used=False, guesses=0, error=False)
+    except Exception:
+        app.logger.exception('Could not process uploaded image %s', save_path)
+        kill_current_session_images()
+        session['error'] = True
 
 
 @app.route('/uploads/<path:filename>')

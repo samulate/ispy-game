@@ -1,0 +1,25 @@
+[project]
+name = "ispy-web"
+version = "0.1.0"
+description = "An I Spy photo guessing game powered by object detection"
+readme = "README.md"
+authors = [
+    { name = "Samulate", email = "264687898+samulate@users.noreply.github.com" }
+]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "flask>=3.1,<4",
+    "gunicorn>=23,<24",
+    "matplotlib>=3.10,<4",
+    "numpy>=2,<3",
+    "opencv-python>=4.11,<5",
+    "pillow>=11,<13",
+    "pillow-heif>=1,<2",
+    "scikit-learn>=1.6,<2",
+    "sentence-transformers>=5,<6",
+    "ultralytics>=8.3,<9",
+    "werkzeug>=3.1,<4",
+]
+
+[tool.uv]
+package = false
